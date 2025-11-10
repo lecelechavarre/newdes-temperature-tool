@@ -242,6 +242,92 @@ class StorageTemperatureReader:
         except Exception as e:
             return f"Error getting sensor info: {e}"
 
+class GradientBackground:
+    """Creates a sophisticated gradient background for the application"""
+    def __init__(self, canvas, width, height):
+        self.canvas = canvas
+        self.width = width
+        self.height = height
+        self.colors = [
+            '#0f172a',  # Dark blue
+            '#1e293b',  # Medium dark blue
+            '#334155',  # Slate
+            '#475569',  # Light slate
+        ]
+        self.gradient_ids = []
+        self.create_gradient_background()
+        
+    def create_gradient_background(self):
+        """Create the gradient background with multiple layers"""
+        # Clear existing gradients
+        for grad_id in self.gradient_ids:
+            self.canvas.delete(grad_id)
+        self.gradient_ids = []
+        
+        # Create main gradient background
+        for i in range(4):
+            color_index = i % len(self.colors)
+            
+            grad_id = self.canvas.create_rectangle(
+                0, i * self.height // 4,
+                self.width, (i + 1) * self.height // 4,
+                fill=self.colors[color_index],
+                outline='',
+                width=0
+            )
+            self.gradient_ids.append(grad_id)
+        
+        # Add subtle grid pattern
+        self.create_grid_pattern()
+        
+        # Add decorative elements
+        self.create_decorative_elements()
+    
+    def create_grid_pattern(self):
+        """Add a subtle grid pattern overlay"""
+        grid_color = '#2d3748'  # Darker gray-blue that works with Tkinter
+        spacing = 80
+        
+        # Vertical lines
+        for x in range(0, self.width, spacing):
+            line_id = self.canvas.create_line(
+                x, 0, x, self.height,
+                fill=grid_color, 
+                width=1, 
+                dash=(4, 6)  # Simpler dash pattern
+            )
+            self.gradient_ids.append(line_id)
+        
+        # Horizontal lines
+        for y in range(0, self.height, spacing):
+            line_id = self.canvas.create_line(
+                0, y, self.width, y,
+                fill=grid_color, 
+                width=1, 
+                dash=(4, 6)  # Simpler dash pattern
+            )
+            self.gradient_ids.append(line_id)
+    
+    def create_decorative_elements(self):
+        """Add decorative elements to the background"""
+        # Add some subtle tech-inspired elements
+        tech_colors = ['#3b82f6', '#60a5fa', '#93c5fd']
+        
+        for i in range(6):
+            size = 80 + i * 20
+            x = self.width * (i % 3) / 3 + 100
+            y = self.height * (i // 3) / 2 + 100
+            
+            # Create subtle circles
+            circle_id = self.canvas.create_oval(
+                x - size, y - size, x + size, y + size,
+                fill='', 
+                outline=tech_colors[i % len(tech_colors)],
+                width=1,
+                dash=(8, 12)
+            )
+            self.gradient_ids.append(circle_id)
+
 class TemperatureMonitor:
     def __init__(self, root):
         self.root = root
@@ -251,22 +337,25 @@ class TemperatureMonitor:
         self.root.geometry("1200x800")
         self.root.state('zoomed')  # Maximize window
         
-        # Modern professional color palette
+        # Modern professional color palette - Dark theme
         self.colors = {
-            'primary': '#2563eb',      # Professional Blue
-            'secondary': '#3b82f6',    # Medium Blue
-            'accent': '#60a5fa',       # Light Blue
-            'background': '#f8fafc',   # Off-white background
-            'surface': '#ffffff',      # White surface
-            'card_bg': '#ffffff',      # Card background
-            'text_primary': '#1f2937', # Dark text
-            'text_secondary': '#6b7280', # Medium text
+            'primary': '#3b82f6',      # Professional Blue
+            'secondary': '#60a5fa',    # Medium Blue
+            'accent': '#93c5fd',       # Light Blue
+            'background': '#0f172a',   # Dark blue background
+            'surface': '#1e293b',      # Card surface
+            'card_bg': '#1e293b',      # Card background
+            'text_primary': '#f8fafc', # Light text
+            'text_secondary': '#cbd5e1', # Medium light text
             'success': '#10b981',      # Green
             'warning': '#f59e0b',      # Amber
             'error': '#ef4444',        # Red
-            'border': '#e5e7eb',       # Light border
-            'hover': '#f3f4f6'         # Hover state
+            'border': '#334155',       # Dark border
+            'hover': '#374151'         # Hover state
         }
+        
+        # Create background first
+        self.setup_background()
         
         # Apply modern styling
         self.setup_modern_styles()
@@ -315,21 +404,50 @@ class TemperatureMonitor:
         self.start_realtime_updates()
         self.start_email_scheduler()
         
+    def setup_background(self):
+        """Setup the gradient background"""
+        # Create a canvas that covers the entire window
+        self.bg_canvas = tk.Canvas(
+            self.root,
+            highlightthickness=0,
+            bg=self.colors['background']
+        )
+        self.bg_canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Update the canvas size after window is created
+        self.root.update()
+        
+        # Create gradient background with current window size
+        self.gradient_bg = GradientBackground(
+            self.bg_canvas, 
+            self.root.winfo_width(), 
+            self.root.winfo_height()
+        )
+        
+        # Bind to window resize events
+        self.root.bind('<Configure>', self.on_resize)
+    
+    def on_resize(self, event):
+        """Handle window resize events"""
+        if event.widget == self.root:
+            # Update background size
+            self.gradient_bg.width = event.width
+            self.gradient_bg.height = event.height
+            self.gradient_bg.create_gradient_background()
+    
     def setup_modern_styles(self):
         """Configure modern professional styling"""
         style = ttk.Style()
         style.theme_use('clam')
         
-        # Configure colors
-        self.root.configure(bg=self.colors['background'])
-        
         # Configure modern styles
-        style.configure('Modern.TFrame', background=self.colors['background'])
+        style.configure('Modern.TFrame', 
+                       background=self.colors['surface'])
+        
         style.configure('Card.TFrame', 
                        background=self.colors['card_bg'],
                        relief='flat', 
-                       borderwidth=0,
-                       border=0)
+                       borderwidth=0)
         
         style.configure('Card.TLabelframe', 
                        background=self.colors['card_bg'],
@@ -345,7 +463,7 @@ class TemperatureMonitor:
         # Modern button styles
         style.configure('Primary.TButton',
                        background=self.colors['primary'],
-                       foreground='white',
+                       foreground=self.colors['text_primary'],
                        borderwidth=0,
                        focuscolor='none',
                        font=('Segoe UI', 9, 'bold'),
@@ -392,8 +510,8 @@ class TemperatureMonitor:
             print(f"Error saving settings: {e}")
         
     def setup_ui(self):
-        # Main frame with modern styling
-        main_frame = ttk.Frame(self.root, style='Modern.TFrame', padding="15")
+        # Create main frame on top of background canvas
+        main_frame = ttk.Frame(self.bg_canvas, style='Modern.TFrame', padding="15")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
         # Header section - Compact and professional
@@ -405,15 +523,15 @@ class TemperatureMonitor:
         title_frame.pack(fill=tk.X)
         
         title_label = ttk.Label(title_frame, text="Storage Temperature Monitor", 
-                               background=self.colors['background'],
-                               foreground=self.colors['primary'],
+                               background=self.colors['surface'],
+                               foreground=self.colors['text_primary'],
                                font=("Segoe UI", 18, "bold"))
         title_label.pack(side=tk.LEFT)
         
         # Note about temperature adjustment
         note_label = ttk.Label(header_frame, 
                               text="Note: Temperatures shown are adjusted for room temperature (not actual device readings)", 
-                              background=self.colors['background'],
+                              background=self.colors['surface'],
                               foreground=self.colors['text_secondary'],
                               font=("Segoe UI", 9))
         note_label.pack(anchor=tk.W, pady=(5, 0))
@@ -494,7 +612,7 @@ class TemperatureMonitor:
                                       style='Card.TLabelframe', padding="12")
         history_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Create professional matplotlib figure
+        # Create professional matplotlib figure with dark theme
         plt.rcParams['axes.facecolor'] = self.colors['card_bg']
         plt.rcParams['figure.facecolor'] = self.colors['card_bg']
         plt.rcParams['axes.edgecolor'] = self.colors['border']
@@ -538,6 +656,7 @@ class TemperatureMonitor:
         
         ttk.Label(refresh_frame, text="Update Interval:", 
                  background=self.colors['card_bg'],
+                 foreground=self.colors['text_primary'],
                  font=('Segoe UI', 9)).pack(anchor=tk.W)
         self.refresh_rate_var = tk.StringVar(value="2")
         refresh_combo = ttk.Combobox(refresh_frame, textvariable=self.refresh_rate_var,
@@ -577,6 +696,7 @@ class TemperatureMonitor:
         
         ttk.Label(warning_frame, text="Warning Temperature (°C):", 
                  background=self.colors['card_bg'],
+                 foreground=self.colors['text_primary'],
                  font=('Segoe UI', 9)).pack(anchor=tk.W)
         
         self.warning_var = tk.StringVar(value=str(self.warning_temp))
@@ -591,6 +711,7 @@ class TemperatureMonitor:
         
         ttk.Label(critical_frame, text="Critical Temperature (°C):", 
                  background=self.colors['card_bg'],
+                 foreground=self.colors['text_primary'],
                  font=('Segoe UI', 9)).pack(anchor=tk.W)
         
         self.critical_var = tk.StringVar(value=str(self.critical_temp))
@@ -611,21 +732,21 @@ class TemperatureMonitor:
         
         self.last_update_var = tk.StringVar(value="Last update: --")
         last_update_label = ttk.Label(footer_frame, textvariable=self.last_update_var,
-                                     background=self.colors['background'],
+                                     background=self.colors['surface'],
                                      foreground=self.colors['text_secondary'],
                                      font=("Segoe UI", 8))
         last_update_label.pack(side=tk.LEFT)
         
         self.time_var = tk.StringVar(value="--:--:--")
         time_label = ttk.Label(footer_frame, textvariable=self.time_var,
-                              background=self.colors['background'],
+                              background=self.colors['surface'],
                               foreground=self.colors['text_secondary'],
                               font=("Segoe UI", 8))
         time_label.pack(side=tk.LEFT, padx=(20, 0))
         
         self.next_email_var = tk.StringVar(value="Next report: --")
         next_email_label = ttk.Label(footer_frame, textvariable=self.next_email_var,
-                                    background=self.colors['background'],
+                                    background=self.colors['surface'],
                                     foreground=self.colors['text_secondary'],
                                     font=("Segoe UI", 8))
         next_email_label.pack(side=tk.RIGHT)
