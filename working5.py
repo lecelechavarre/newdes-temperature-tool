@@ -349,7 +349,7 @@ class TemperatureMonitor:
                        borderwidth=0,
                        focuscolor='none',
                        font=('Segoe UI', 9, 'bold'),
-                       padding=(15, 8))
+                       padding=(12, 6))
         
         style.configure('Secondary.TButton',
                        background=self.colors['surface'],
@@ -358,7 +358,7 @@ class TemperatureMonitor:
                        bordercolor=self.colors['border'],
                        focuscolor='none',
                        font=('Segoe UI', 9),
-                       padding=(15, 8))
+                       padding=(10, 5))
         
         style.map('Primary.TButton',
                  background=[('active', self.colors['secondary']),
@@ -454,7 +454,7 @@ class TemperatureMonitor:
                                          font=("Segoe UI", 20, "bold"))
         self.max_temp_display.pack(anchor=tk.W, pady=(5, 0))
         
-        # Sensor status card - UPDATED: Now includes system status (Condition 1)
+        # Sensor status card
         sensor_card = ttk.Frame(metrics_frame, style='Card.TFrame', padding="15")
         sensor_card.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(8, 0))
         
@@ -471,7 +471,7 @@ class TemperatureMonitor:
                                       font=("Segoe UI", 10))
         sensor_status_label.pack(anchor=tk.W, pady=(5, 0))
         
-        # System status - MOVED to sensor status section (Condition 1)
+        # System status
         self.status_var = tk.StringVar(value="Initializing...")
         status_label = ttk.Label(sensor_card, textvariable=self.status_var,
                                 background=self.colors['card_bg'],
@@ -489,7 +489,7 @@ class TemperatureMonitor:
         left_column = ttk.Frame(content_frame, style='Modern.TFrame')
         left_column.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
         
-        # Professional Temperature History Graph - UPDATED: Wider to show full title (Condition 2)
+        # Professional Temperature History Graph
         history_frame = ttk.LabelFrame(left_column, text="TEMPERATURE HISTORY", 
                                       style='Card.TLabelframe', padding="12")
         history_frame.pack(fill=tk.BOTH, expand=True)
@@ -503,53 +503,54 @@ class TemperatureMonitor:
         plt.rcParams['xtick.color'] = self.colors['text_secondary']
         plt.rcParams['ytick.color'] = self.colors['text_secondary']
         plt.rcParams['font.size'] = 9
-        plt.rcParams['axes.titlesize'] = 11
+        plt.rcParams['axes.titlesize'] = 12
         plt.rcParams['axes.labelsize'] = 10
         
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
-        self.fig.tight_layout(pad=3.0)
+        self.fig.tight_layout(pad=4.0)
         self.canvas = FigureCanvasTkAgg(self.fig, master=history_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
-        # Right column - Compact Controls
+        # Right column - Controls and Settings
         right_column = ttk.Frame(content_frame, style='Modern.TFrame')
         right_column.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=(10, 0))
         
-        # Monitoring Controls - Compact
+        # Monitoring Controls
         controls_frame = ttk.LabelFrame(right_column, text="CONTROLS", 
-                                       style='Card.TLabelframe', padding="12")
-        controls_frame.pack(fill=tk.X, pady=(0, 10))
+                                       style='Card.TLabelframe', padding="10")
+        controls_frame.pack(fill=tk.X, pady=(0, 8))
         
         # Alert controls
         self.start_button = ttk.Button(controls_frame, text="▶ Start Alerts", 
                                       command=self.start_alert_monitoring, 
                                       style='Primary.TButton')
-        self.start_button.pack(fill=tk.X, pady=(0, 5))
+        self.start_button.pack(fill=tk.X, pady=(0, 4))
         
         self.stop_button = ttk.Button(controls_frame, text="⏹ Stop Alerts", 
                                      command=self.stop_alert_monitoring, 
                                      state="disabled", 
                                      style='Secondary.TButton')
-        self.stop_button.pack(fill=tk.X, pady=(0, 10))
+        self.stop_button.pack(fill=tk.X, pady=(0, 8))
         
         # Refresh controls
         refresh_frame = ttk.Frame(controls_frame, style='Card.TFrame')
-        refresh_frame.pack(fill=tk.X, pady=(0, 10))
+        refresh_frame.pack(fill=tk.X, pady=(0, 8))
         
         ttk.Label(refresh_frame, text="Update Interval:", 
-                 background=self.colors['card_bg']).pack(anchor=tk.W)
+                 background=self.colors['card_bg'],
+                 font=('Segoe UI', 9)).pack(anchor=tk.W)
         self.refresh_rate_var = tk.StringVar(value="2")
         refresh_combo = ttk.Combobox(refresh_frame, textvariable=self.refresh_rate_var,
                                     values=["1", "2", "5", "10"], 
-                                    width=8, 
+                                    width=6,
                                     state="readonly",
                                     height=4)
-        refresh_combo.pack(fill=tk.X, pady=(5, 5))
+        refresh_combo.pack(fill=tk.X, pady=(3, 3))
         
         refresh_button = ttk.Button(refresh_frame, text="🔄 Refresh Now", 
                                   command=self.manual_refresh, 
                                   style='Secondary.TButton')
-        refresh_button.pack(fill=tk.X, pady=(5, 5))
+        refresh_button.pack(fill=tk.X, pady=(3, 3))
         
         # Utility buttons
         utils_frame = ttk.Frame(controls_frame, style='Card.TFrame')
@@ -558,39 +559,51 @@ class TemperatureMonitor:
         sensor_button = ttk.Button(utils_frame, text="📊 Sensor Info", 
                                   command=self.show_sensor_info, 
                                   style='Secondary.TButton')
-        sensor_button.pack(fill=tk.X, pady=(0, 5))
+        sensor_button.pack(fill=tk.X, pady=(0, 4))
         
         email_button = ttk.Button(utils_frame, text="✉️ Test Email", 
                                  command=self.send_test_email, 
                                  style='Secondary.TButton')
-        email_button.pack(fill=tk.X, pady=(0, 5))
+        email_button.pack(fill=tk.X, pady=(0, 4))
         
-        # Settings - Compact - UPDATED: Wider to show full button text (Condition 2)
+        # Settings - SIMPLIFIED layout
         settings_frame = ttk.LabelFrame(right_column, text="SETTINGS", 
                                        style='Card.TLabelframe', padding="12")
-        settings_frame.pack(fill=tk.X)
+        settings_frame.pack(fill=tk.X, expand=False)
         
-        # Warning temperature
-        ttk.Label(settings_frame, text="Warning Temp (°C):", 
-                 background=self.colors['card_bg']).pack(anchor=tk.W, pady=(0, 2))
+        # Simple vertical layout for temperature settings
+        warning_frame = ttk.Frame(settings_frame, style='Card.TFrame')
+        warning_frame.pack(fill=tk.X, pady=(0, 8))
+        
+        ttk.Label(warning_frame, text="Warning Temperature (°C):", 
+                 background=self.colors['card_bg'],
+                 font=('Segoe UI', 9)).pack(anchor=tk.W)
+        
         self.warning_var = tk.StringVar(value=str(self.warning_temp))
-        warning_entry = ttk.Entry(settings_frame, textvariable=self.warning_var, 
-                                 width=12, font=('Segoe UI', 9))
-        warning_entry.pack(fill=tk.X, pady=(0, 8))
+        warning_entry = ttk.Entry(warning_frame, textvariable=self.warning_var, 
+                                 width=10,
+                                 font=('Segoe UI', 9))
+        warning_entry.pack(fill=tk.X, pady=(5, 0))
         
-        # Critical temperature
-        ttk.Label(settings_frame, text="Critical Temp (°C):", 
-                 background=self.colors['card_bg']).pack(anchor=tk.W, pady=(0, 2))
+        # Critical temperature - SIMPLE layout
+        critical_frame = ttk.Frame(settings_frame, style='Card.TFrame')
+        critical_frame.pack(fill=tk.X, pady=(0, 12))
+        
+        ttk.Label(critical_frame, text="Critical Temperature (°C):", 
+                 background=self.colors['card_bg'],
+                 font=('Segoe UI', 9)).pack(anchor=tk.W)
+        
         self.critical_var = tk.StringVar(value=str(self.critical_temp))
-        critical_entry = ttk.Entry(settings_frame, textvariable=self.critical_var, 
-                                  width=12, font=('Segoe UI', 9))
-        critical_entry.pack(fill=tk.X, pady=(0, 8))
+        critical_entry = ttk.Entry(critical_frame, textvariable=self.critical_var, 
+                                  width=10,
+                                  font=('Segoe UI', 9))
+        critical_entry.pack(fill=tk.X, pady=(5, 0))
         
-        # Update settings button - UPDATED: Wider to show full text (Condition 2)
+        # Save Settings button - CLEARLY VISIBLE
         update_button = ttk.Button(settings_frame, text="💾 Save Settings", 
                                   command=self.update_settings, 
                                   style='Primary.TButton')
-        update_button.pack(fill=tk.X, pady=(5, 0))
+        update_button.pack(fill=tk.X, pady=(8, 5))
         
         # Footer with modern styling
         footer_frame = ttk.Frame(main_frame, style='Modern.TFrame')
@@ -620,6 +633,9 @@ class TemperatureMonitor:
         # Configure grid weights for resizing
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
+        
+        # Force update to ensure proper rendering
+        self.root.update_idletasks()
     
     def update_sensor_status(self):
         """Update sensor status display"""
@@ -678,7 +694,6 @@ class TemperatureMonitor:
     
     def update_status_indicator(self, temperature):
         """Update the status indicator color based on temperature"""
-        # Status indicator is now removed from header and moved to sensor status section
         pass
     
     def send_desktop_notification(self, title, message, temp):
@@ -825,7 +840,6 @@ No response is required unless immediate action is indicated above.
     
     def update_storage_display(self):
         """Update the storage devices display"""
-        # This method is kept for internal data management but UI elements are removed
         pass
     
     def update_graph(self):
@@ -859,11 +873,11 @@ No response is required unless immediate action is indicated above.
                           alpha=0.7, 
                           label=f'Critical ({self.critical_temp}°C)')
             
-            # Professional labels and title - UPDATED: Shorter title to fit (Condition 2)
+            # Professional labels and title
             self.ax.set_ylabel('Temperature (°C)', fontsize=10, fontweight='bold')
             self.ax.set_xlabel('Time (minutes)', fontsize=10, fontweight='bold')
-            self.ax.set_title('Temperature Trend',  # Shorter title to ensure it fits
-                            fontsize=12, fontweight='bold', pad=15)
+            self.ax.set_title('Temperature Trend', 
+                            fontsize=12, fontweight='bold', pad=20)
             
             # Professional legend
             self.ax.legend(loc='upper right', fontsize=9, framealpha=0.95)
@@ -975,7 +989,7 @@ No response is required unless immediate action is indicated above.
         else:
             self.max_temp_var.set("--°C")
         
-        # Update system status in sensor status section (Condition 1)
+        # Update system status in sensor status section
         if max_temp is None:
             status_text = "No sensor data"
             self.max_temp_display.config(foreground=self.colors['error'])
