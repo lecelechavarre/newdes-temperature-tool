@@ -410,18 +410,6 @@ class TemperatureMonitor:
                                font=("Segoe UI", 18, "bold"))
         title_label.pack(side=tk.LEFT)
         
-        # Status indicator in header
-        self.status_indicator = tk.Canvas(title_frame, width=12, height=12, bg="gray", 
-                                         highlightthickness=0, relief='flat')
-        self.status_indicator.pack(side=tk.LEFT, padx=(10, 0), pady=(5, 0))
-        
-        self.status_var = tk.StringVar(value="Initializing...")
-        status_label = ttk.Label(title_frame, textvariable=self.status_var,
-                                background=self.colors['background'],
-                                foreground=self.colors['text_secondary'],
-                                font=("Segoe UI", 9))
-        status_label.pack(side=tk.LEFT, padx=(5, 0))
-        
         # Note about temperature adjustment
         note_label = ttk.Label(header_frame, 
                               text="Note: Temperatures shown are adjusted for room temperature (not actual device readings)", 
@@ -466,7 +454,7 @@ class TemperatureMonitor:
                                          font=("Segoe UI", 20, "bold"))
         self.max_temp_display.pack(anchor=tk.W, pady=(5, 0))
         
-        # Sensor status card
+        # Sensor status card - UPDATED: Now includes system status (Condition 1)
         sensor_card = ttk.Frame(metrics_frame, style='Card.TFrame', padding="15")
         sensor_card.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(8, 0))
         
@@ -475,12 +463,22 @@ class TemperatureMonitor:
                  foreground=self.colors['text_secondary'],
                  font=("Segoe UI", 9, "bold")).pack(anchor=tk.W)
         
+        # Sensor connection status
         self.sensor_status_var = tk.StringVar()
         sensor_status_label = ttk.Label(sensor_card, textvariable=self.sensor_status_var,
                                       background=self.colors['card_bg'],
                                       foreground=self.colors['text_primary'],
                                       font=("Segoe UI", 10))
         sensor_status_label.pack(anchor=tk.W, pady=(5, 0))
+        
+        # System status - MOVED to sensor status section (Condition 1)
+        self.status_var = tk.StringVar(value="Initializing...")
+        status_label = ttk.Label(sensor_card, textvariable=self.status_var,
+                                background=self.colors['card_bg'],
+                                foreground=self.colors['text_primary'],
+                                font=("Segoe UI", 9))
+        status_label.pack(anchor=tk.W, pady=(2, 0))
+        
         self.update_sensor_status()
         
         # Main content area - Responsive layout
@@ -491,7 +489,7 @@ class TemperatureMonitor:
         left_column = ttk.Frame(content_frame, style='Modern.TFrame')
         left_column.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
         
-        # Professional Temperature History Graph
+        # Professional Temperature History Graph - UPDATED: Wider to show full title (Condition 2)
         history_frame = ttk.LabelFrame(left_column, text="TEMPERATURE HISTORY", 
                                       style='Card.TLabelframe', padding="12")
         history_frame.pack(fill=tk.BOTH, expand=True)
@@ -567,7 +565,7 @@ class TemperatureMonitor:
                                  style='Secondary.TButton')
         email_button.pack(fill=tk.X, pady=(0, 5))
         
-        # Settings - Compact
+        # Settings - Compact - UPDATED: Wider to show full button text (Condition 2)
         settings_frame = ttk.LabelFrame(right_column, text="SETTINGS", 
                                        style='Card.TLabelframe', padding="12")
         settings_frame.pack(fill=tk.X)
@@ -577,7 +575,7 @@ class TemperatureMonitor:
                  background=self.colors['card_bg']).pack(anchor=tk.W, pady=(0, 2))
         self.warning_var = tk.StringVar(value=str(self.warning_temp))
         warning_entry = ttk.Entry(settings_frame, textvariable=self.warning_var, 
-                                 width=10, font=('Segoe UI', 9))
+                                 width=12, font=('Segoe UI', 9))
         warning_entry.pack(fill=tk.X, pady=(0, 8))
         
         # Critical temperature
@@ -585,10 +583,10 @@ class TemperatureMonitor:
                  background=self.colors['card_bg']).pack(anchor=tk.W, pady=(0, 2))
         self.critical_var = tk.StringVar(value=str(self.critical_temp))
         critical_entry = ttk.Entry(settings_frame, textvariable=self.critical_var, 
-                                  width=10, font=('Segoe UI', 9))
+                                  width=12, font=('Segoe UI', 9))
         critical_entry.pack(fill=tk.X, pady=(0, 8))
         
-        # Update settings button
+        # Update settings button - UPDATED: Wider to show full text (Condition 2)
         update_button = ttk.Button(settings_frame, text="💾 Save Settings", 
                                   command=self.update_settings, 
                                   style='Primary.TButton')
@@ -680,17 +678,8 @@ class TemperatureMonitor:
     
     def update_status_indicator(self, temperature):
         """Update the status indicator color based on temperature"""
-        if temperature is None:
-            color = "gray"
-        elif temperature >= self.critical_temp:
-            color = self.colors['error']
-        elif temperature >= self.warning_temp:
-            color = self.colors['warning']
-        else:
-            color = self.colors['success']
-        
-        self.status_indicator.delete("all")
-        self.status_indicator.create_oval(2, 2, 10, 10, fill=color, outline="", width=0)
+        # Status indicator is now removed from header and moved to sensor status section
+        pass
     
     def send_desktop_notification(self, title, message, temp):
         """Send system desktop notification"""
@@ -870,10 +859,10 @@ No response is required unless immediate action is indicated above.
                           alpha=0.7, 
                           label=f'Critical ({self.critical_temp}°C)')
             
-            # Professional labels and title
+            # Professional labels and title - UPDATED: Shorter title to fit (Condition 2)
             self.ax.set_ylabel('Temperature (°C)', fontsize=10, fontweight='bold')
             self.ax.set_xlabel('Time (minutes)', fontsize=10, fontweight='bold')
-            self.ax.set_title('Storage Temperature Trend', 
+            self.ax.set_title('Temperature Trend',  # Shorter title to ensure it fits
                             fontsize=12, fontweight='bold', pad=15)
             
             # Professional legend
@@ -986,8 +975,7 @@ No response is required unless immediate action is indicated above.
         else:
             self.max_temp_var.set("--°C")
         
-        self.update_status_indicator(max_temp)
-        
+        # Update system status in sensor status section (Condition 1)
         if max_temp is None:
             status_text = "No sensor data"
             self.max_temp_display.config(foreground=self.colors['error'])
