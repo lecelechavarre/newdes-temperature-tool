@@ -19,7 +19,9 @@ python servertemp_monitor.py
 ```
 
 4. Enable Real Hardware Monitoring (Recommended)
+```
 Download OpenHardwareMonitor
 Extract the ZIP file
 Run as Administrator: Right-click OpenHardwareMonitor.exe → "Run as administrator"
 Keep it running in the background
+```
